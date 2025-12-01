@@ -10,7 +10,7 @@ display = pg.display.set_mode((screenwidth, screenheight))
 
 clock = pg.time.Clock()
 run = True
-fps = 60
+fps = 120
 
 class Player:
     def __init__(self):
@@ -18,6 +18,7 @@ class Player:
         self.velocity = 0
         self.xvelocity = 0
         self.canjump = True
+        self.cancollide = True
 
     def update(self):
         self.rect.x += self.xvelocity * dt
@@ -44,18 +45,22 @@ class Block:
         self.velocity = 0
         self.xvelocity = 0
         self.touched = False
+        self.canjump = True
+        self.cancollide = False
 
     def update(self, entity):
         for entities in entity:
             if self.rect.colliderect(entities):
-                entities.velocity = 0
-                entities.rect.bottom = self.rect.top
-                entities.canjump = True
+                if entities.cancollide == True:
+                    entities.velocity = 0
+                    entities.rect.bottom = self.rect.top
+                    entities.canjump = True
 
         if self.touched == True:
             self.rect.x += self.xvelocity * dt
             self.rect.y += self.velocity * dt
             self.velocity += 1600 * dt
+            self.cancollide = True
 
         self.updatedmousepos = pg.mouse.get_pos()
         self.updatedmouse = pg.mouse.get_pressed()
@@ -105,7 +110,7 @@ while run:
     player.render()
 
     for blocks in blockslist:
-        blocks.update([player])
+        blocks.update([player, blocks])
         blocks.render()
 
     for event in pg.event.get():
